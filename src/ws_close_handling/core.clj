@@ -2,17 +2,18 @@
   (:require
    [compojure.core :refer [defroutes GET]]
    [ring.adapter.undertow :as undertow-adapter]
-   [ring.adapter.undertow.websocket :as ws]))
+   [ring.adapter.undertow.websocket :as ws]
+   [clojure.string :as str]))
 
 (def id-atom (atom 0))
 (defn ws-handler [_]
   (let [id (swap! id-atom inc)]
     {:undertow/websocket
      {:on-open (fn [{:keys [channel]}]
-                 (println (format " [%s] online! id" id))
+                 (println (format " [%s] online!" id))
                  (ws/send (format " [%s] ok" id) channel))
       :on-message (fn [{:keys [channel data]}]
-                    (if (= "break" data)
+                    (if (= "break" (str/trim data))
                       (do
                         (println (format " [%s] about to break!" id))
                         (.close channel))
